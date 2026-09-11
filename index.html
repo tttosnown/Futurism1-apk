@@ -27,7 +27,6 @@ header{padding:28px 22px 18px;display:flex;justify-content:space-between;align-i
 .week,.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:6px}.week div{text-align:center;font-size:10px;opacity:.35;padding-bottom:5px}.day{min-height:72px;background:#fff;border-radius:13px;padding:8px;position:relative;overflow:hidden}.day.other{opacity:.28}.daynum{font-size:11px;opacity:.5}.mark{position:absolute;right:7px;bottom:7px;width:7px;height:7px;border-radius:50%;background:#17151a}.thumb{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.72}.day.hasphoto .daynum{position:relative;z-index:2;background:#fff;border-radius:8px;padding:2px 4px}
 .overlay{display:none;position:fixed;inset:0;background:#00000045;z-index:5;align-items:flex-end}.overlay.show{display:flex}.sheet{width:100%;max-width:760px;margin:auto;background:#fff;border-radius:28px 28px 0 0;padding:20px 18px calc(24px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}.sheethead{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}.close{font-size:25px;width:38px;height:38px;border-radius:50%;background:#f1eef3}.field{margin-bottom:12px}.field input,.field textarea{width:100%;border:0;background:#f6f4f7;border-radius:16px;padding:13px;outline:0}.field textarea{min-height:130px;resize:vertical}.preview{max-height:300px;width:100%;object-fit:cover;border-radius:18px;margin:8px 0}.record-list .card{padding:17px}.small-actions{display:flex;gap:8px;margin-top:12px}.small-actions button{font-size:12px;padding:8px 12px;border-radius:999px;background:#eeeaf1}.small-actions .danger{color:#a33}
 
-/* time atmosphere */
 body{transition:background 1.2s ease}
 body.time-morning{background:linear-gradient(135deg,#edf7fc 0%,#f7fbfd 50%,#eaf5fb 100%)}
 body.time-day{background:linear-gradient(135deg,#fff8ed 0%,#fffaf4 50%,#fff0dc 100%)}
@@ -39,7 +38,6 @@ body.time-late{background:linear-gradient(135deg,#f0f1f2 0%,#f7f7f7 50%,#e9eaec 
 .iconbtn.dark{background:#111;color:#fff}
 .iconbtn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .iconrow{display:flex;gap:8px;margin-top:12px}
-
 .more{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;gap:3px;background:rgba(255,255,255,.62)}
 .more span{width:3px;height:3px;background:#111;border-radius:50%}
 .setting-row{display:flex;align-items:center;justify-content:space-between;padding:17px 4px;border-bottom:1px solid #eee;cursor:pointer}
@@ -87,7 +85,6 @@ body.time-late{background:linear-gradient(135deg,#f0f1f2 0%,#f7f7f7 50%,#e9eaec 
 
 <div id="viewer" class="overlay"><div class="sheet"><div class="sheethead"><strong id="viewDate"></strong><button class="close" onclick="closeViewer()">×</button></div><div id="viewContent"></div><div class="iconrow"><button class="iconbtn" onclick="editCurrent()" aria-label="编辑" title="编辑"><svg viewBox="0 0 18 18"><path d="M3.5 13.8V16h2.2L14.8 6.9l-2.2-2.2-9.1 9.1ZM11.5 6.2l2.2 2.2"/></svg></button><button class="iconbtn" onclick="deleteCurrent()" aria-label="删除" title="删除"><svg viewBox="0 0 18 18"><path d="M4 5h10M7 5V3.5h4V5M5 5l.7 10h6.6L13 5M7.5 8v4.5M10.5 8v4.5"/></svg></button></div></div></div>
 
-
 <div id="settings" class="overlay"><div class="sheet">
   <div class="sheethead"><strong>设置</strong><button class="close" onclick="closeSettings()">×</button></div>
   <div class="setting-row" onclick="exportData()">
@@ -104,6 +101,7 @@ body.time-late{background:linear-gradient(135deg,#f0f1f2 0%,#f7f7f7 50%,#e9eaec 
   </div>
   <input id="importInput" type="file" accept=".json,application/json" style="display:none" onchange="importData(event)">
 </div></div>
+
 <script>
 const KEY='futurism-records-v2';
 let records=JSON.parse(localStorage.getItem(KEY)||'[]');
@@ -178,7 +176,7 @@ function loadPhoto(e){const f=e.target.files[0];if(!f)return;const rd=new FileRe
 function showPreview(src){const p=document.getElementById('preview');p.src=src;p.style.display='block'}
 function saveEditor(){
  const text=document.getElementById('editText').value.trim(),date=document.getElementById('editDate').value;
- if(!date||( !text&&!tempPhoto)){alert('至少留下文字或照片');return}
+ if(!date||(!text&&!tempPhoto)){alert('至少留下文字或照片');return}
  if(editingId){const r=records.find(x=>x.id===editingId);r.date=date;r.text=text;r.photo=tempPhoto}
  else records.push({id:crypto.randomUUID(),date,text,photo:tempPhoto});
  persist();closeEditor();renderChance();renderCalendar();
@@ -205,12 +203,27 @@ let deferredInstallPrompt=null;
 window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstallPrompt=e});
 function openSettings(){document.getElementById('settings').classList.add('show')}
 function closeSettings(){document.getElementById('settings').classList.remove('show')}
+
+/* ===== 导出：APK 使用 Android 原生保存，浏览器仍使用原来的下载方式 ===== */
 function exportData(){
  const payload={app:'Futurism',version:2,exportedAt:new Date().toISOString(),records};
- const blob=new Blob([JSON.stringify(payload,null,2)],{type:'application/json'});
- const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='Futurism-日志备份-'+todayISO()+'.json';a.click();
+ const json=JSON.stringify(payload,null,2);
+ const filename='Futurism-日志备份-'+todayISO()+'.json';
+
+ if(window.Android&&typeof window.Android.saveFile==='function'){
+   window.Android.saveFile(filename,json);
+   return;
+ }
+
+ const blob=new Blob([json],{type:'application/json'});
+ const a=document.createElement('a');
+ a.href=URL.createObjectURL(blob);
+ a.download=filename;
+ a.click();
  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
 }
+
+/* ===== 导入：保留原来的 JSON 格式与合并逻辑 ===== */
 function importData(e){
  const f=e.target.files[0]; if(!f)return;
  const rd=new FileReader();
@@ -228,6 +241,7 @@ function importData(e){
  };
  rd.readAsText(f);
 }
+
 async function installApp(){
  if(deferredInstallPrompt){
    deferredInstallPrompt.prompt();
@@ -238,4 +252,5 @@ async function installApp(){
  }
 }
 </script>
-</body></html>
+</body>
+</html>
