@@ -4,63 +4,67 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#f3f0f8">
-<title>Futurism</title><link rel="manifest" href="manifest.json"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="mobile-web-app-capable" content="yes"><meta name="application-name" content="Futurism"><link rel="icon" href="icons/icon-192.png">
+<title>Futurism</title>
+<link rel="manifest" href="manifest.json">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Futurism">
+<link rel="icon" href="icons/icon-192.png">
+
 <style>
 *{box-sizing:border-box}
 body{
  margin:0;
  background:#f3f0f8;
  color:#17151a;
- font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC",sans-serif
+ font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","PingFang SC",sans-serif;
+ transition:background 1.2s ease;
 }
 button,input,textarea{font:inherit}
-button{
- border:0;
- background:none;
- color:inherit;
- cursor:pointer;
- -webkit-tap-highlight-color:transparent
-}
+button{border:0;background:none;color:inherit;cursor:pointer}
 button:focus{outline:none}
-input,textarea,select{-webkit-tap-highlight-color:transparent}
+button,input,textarea{ -webkit-tap-highlight-color:transparent }
 
 .app{
  max-width:760px;
  margin:auto;
  min-height:100vh;
- padding-bottom:88px
+ padding-bottom:88px;
 }
+
 header{
  padding:28px 22px 18px;
  display:flex;
  justify-content:space-between;
- align-items:center
+ align-items:center;
 }
+
 .logo{
  font-size:27px;
  font-weight:650;
- letter-spacing:-.04em
+ letter-spacing:-.04em;
 }
+
 .sub{
  font-size:12px;
- opacity:.45
+ opacity:.45;
 }
 
 .page{
  display:none;
  padding:0 18px;
  opacity:0;
- transform:translateY(3px)
+ transform:translateY(3px);
+ pointer-events:none;
+ transition:opacity .16s ease,transform .16s ease;
 }
+
 .page.active{
  display:block;
  opacity:1;
  transform:translateY(0);
- animation:pageIn .16s ease
-}
-@keyframes pageIn{
- from{opacity:0;transform:translateY(3px)}
- to{opacity:1;transform:translateY(0)}
+ pointer-events:auto;
 }
 
 .card{
@@ -68,44 +72,46 @@ header{
  border-radius:24px;
  padding:22px;
  margin-bottom:14px;
- box-shadow:0 3px 18px #00000008
+ box-shadow:0 3px 18px #00000008;
 }
+
 .label{
  font-size:11px;
  letter-spacing:.1em;
  text-transform:uppercase;
  opacity:.42;
- margin-bottom:12px
+ margin-bottom:12px;
 }
+
 .date{
  font-size:13px;
  opacity:.5;
- margin-bottom:14px
+ margin-bottom:14px;
 }
+
 .memory-title{
  font-size:23px;
  line-height:1.25;
- margin-bottom:16px
+ margin-bottom:16px;
 }
+
 .memory-text{
  font-size:16px;
  line-height:1.7;
- white-space:pre-wrap
+ white-space:pre-wrap;
+ word-break:break-word;
 }
-.photo{
- width:100%;
- border-radius:18px;
- display:block;
- margin:0 0 15px;
- max-height:420px;
- object-fit:cover
-}
+
 .empty{
  padding:48px 20px;
  text-align:center;
- opacity:.45
+ opacity:.45;
 }
-.today{margin-top:28px}
+
+.today{
+ margin-top:28px;
+}
+
 .today textarea{
  width:100%;
  min-height:110px;
@@ -114,23 +120,26 @@ header{
  resize:vertical;
  background:#f7f5f9;
  border-radius:18px;
- padding:16px
+ padding:16px;
 }
+
 .actions{
  display:flex;
  gap:10px;
- margin-top:12px
+ margin-top:12px;
 }
+
 .pill{
  padding:11px 15px;
  border-radius:999px;
  background:#17151a;
  color:white;
- font-size:13px
+ font-size:13px;
 }
+
 .pill.light{
  background:#eeeaf1;
- color:#17151a
+ color:#17151a;
 }
 
 .bottom{
@@ -144,60 +153,76 @@ header{
  backdrop-filter:blur(18px);
  display:flex;
  gap:8px;
- transition:background 1.2s ease
+ z-index:4;
+ transition:background 1.2s ease;
 }
+
 .nav{
  flex:1;
  padding:13px;
  border-radius:16px;
- font-size:14px
+ font-size:14px;
 }
+
 .nav.active{
  background:#17151a;
- color:white
+ color:white;
 }
 
 .monthbar{
  display:flex;
  justify-content:space-between;
  align-items:center;
- margin:8px 3px 18px
+ margin:8px 3px 18px;
 }
+
 .month{
  font-size:22px;
- font-weight:600
+ font-weight:600;
 }
+
 .arrow{
  width:40px;
  height:40px;
  border-radius:50%;
  background:#fff;
- font-size:22px
+ font-size:22px;
 }
-.week,.calendar{
+
+.week,
+.calendar{
  display:grid;
  grid-template-columns:repeat(7,1fr);
- gap:6px
+ gap:6px;
 }
+
 .week div{
  text-align:center;
  font-size:10px;
  opacity:.35;
- padding-bottom:5px
+ padding-bottom:5px;
 }
+
 .day{
  min-height:72px;
  background:#fff;
  border-radius:13px;
  padding:8px;
  position:relative;
- overflow:hidden
+ overflow:hidden;
 }
-.day.other{opacity:.28}
+
+.day.other{
+ opacity:.28;
+}
+
 .daynum{
  font-size:11px;
- opacity:.5
+ opacity:.5;
+ position:relative;
+ z-index:2;
 }
+
 .mark{
  position:absolute;
  right:7px;
@@ -205,22 +230,23 @@ header{
  width:7px;
  height:7px;
  border-radius:50%;
- background:#17151a
+ background:#17151a;
 }
+
 .thumb{
  position:absolute;
  inset:0;
  width:100%;
  height:100%;
  object-fit:cover;
- opacity:.72
+ opacity:.72;
 }
+
 .day.hasphoto .daynum{
- position:relative;
- z-index:2;
  background:#fff;
  border-radius:8px;
- padding:2px 4px
+ padding:2px 4px;
+ width:max-content;
 }
 
 .overlay{
@@ -230,17 +256,15 @@ header{
  background:#00000045;
  z-index:5;
  align-items:flex-end;
- opacity:0
+ opacity:0;
+ transition:opacity .16s ease;
 }
+
 .overlay.show{
  display:flex;
  opacity:1;
- animation:overlayIn .16s ease
 }
-@keyframes overlayIn{
- from{opacity:0}
- to{opacity:1}
-}
+
 .sheet{
  width:100%;
  max-width:760px;
@@ -250,75 +274,73 @@ header{
  padding:20px 18px calc(24px + env(safe-area-inset-bottom));
  max-height:88vh;
  overflow:auto;
- animation:sheetIn .18s ease
+ transform:translateY(12px);
+ opacity:.96;
+ transition:transform .18s ease,opacity .18s ease;
 }
-@keyframes sheetIn{
- from{transform:translateY(12px);opacity:.96}
- to{transform:translateY(0);opacity:1}
+
+.overlay.show .sheet{
+ transform:translateY(0);
+ opacity:1;
 }
+
 .sheethead{
  display:flex;
  justify-content:space-between;
  align-items:center;
- margin-bottom:18px
+ margin-bottom:18px;
 }
+
 .close{
  font-size:25px;
  width:38px;
  height:38px;
  border-radius:50%;
- background:#f1eef3
+ background:#f1eef3;
 }
-.field{margin-bottom:12px}
-.field input,.field textarea{
+
+.field{
+ margin-bottom:12px;
+}
+
+.field input,
+.field textarea{
  width:100%;
  border:0;
  background:#f6f4f7;
  border-radius:16px;
  padding:13px;
- outline:0
+ outline:0;
 }
+
 .field textarea{
  min-height:130px;
- resize:vertical
+ resize:vertical;
 }
+
 .preview{
  max-height:300px;
  width:100%;
  object-fit:cover;
  border-radius:18px;
- margin:8px 0
+ margin:8px 0;
 }
-.record-list .card{padding:17px}
+
+.record-list .card{
+ padding:17px;
+}
+
 .small-actions{
  display:flex;
  gap:8px;
- margin-top:12px
+ margin-top:12px;
 }
+
 .small-actions button{
  font-size:12px;
  padding:8px 12px;
  border-radius:999px;
- background:#eeeaf1
-}
-.small-actions .danger{color:#a33}
-
-/* time atmosphere */
-body{transition:background 1.2s ease}
-body.time-morning{
- background:linear-gradient(135deg,#edf7fc 0%,#f7fbfd 50%,#eaf5fb 100%)
-}
-body.time-day{
- background:linear-gradient(135deg,#fff8ed 0%,#fffaf4 50%,#fff0dc 100%)
-}
-body.time-evening{
- background:linear-gradient(135deg,#fff1f3 0%,#fff8f8 50%,#fbecef 100%)
-}
-body.time-night{
- background:linear-gradient(135deg,#f4eef9 0%,#f8f4fb 50%,#eee8f5 100%)
-}
-body.time-late{
- background:linear-gradient(135deg,#f0f1f2 0%,#f7f7f7 50%,#e9eaec 100%)
+ background:#eeeaf1;
 }
 
 .iconbtn{
@@ -330,12 +352,14 @@ body.time-late{
  justify-content:center;
  background:#eeecef;
  color:#111;
- padding:0
+ padding:0;
 }
+
 .iconbtn.dark{
  background:#111;
- color:#fff
+ color:#fff;
 }
+
 .iconbtn svg{
  width:18px;
  height:18px;
@@ -343,12 +367,13 @@ body.time-late{
  fill:none;
  stroke-width:1.8;
  stroke-linecap:round;
- stroke-linejoin:round
+ stroke-linejoin:round;
 }
+
 .iconrow{
  display:flex;
  gap:8px;
- margin-top:12px
+ margin-top:12px;
 }
 
 .more{
@@ -359,13 +384,14 @@ body.time-late{
  align-items:center;
  justify-content:center;
  gap:3px;
- background:rgba(255,255,255,.62)
+ background:rgba(255,255,255,.62);
 }
+
 .more span{
  width:3px;
  height:3px;
  background:#111;
- border-radius:50%
+ border-radius:50%;
 }
 
 .setting-row{
@@ -374,15 +400,23 @@ body.time-late{
  justify-content:space-between;
  padding:17px 4px;
  border-bottom:1px solid #eee;
- cursor:pointer
+ cursor:pointer;
 }
-.setting-row:last-of-type{border-bottom:0}
-.setting-name{font-size:15px}
+
+.setting-row:last-of-type{
+ border-bottom:0;
+}
+
+.setting-name{
+ font-size:15px;
+}
+
 .setting-desc{
  font-size:11px;
  opacity:.42;
- margin-top:4px
+ margin-top:4px;
 }
+
 .setting-row>svg{
  width:21px;
  height:21px;
@@ -390,7 +424,108 @@ body.time-late{
  fill:none;
  stroke-width:1.7;
  stroke-linecap:round;
- stroke-linejoin:round
+ stroke-linejoin:round;
+}
+
+/* 时间背景 */
+body.time-morning{
+ background:linear-gradient(135deg,#edf7fc 0%,#f7fbfd 50%,#eaf5fb 100%);
+}
+
+body.time-day{
+ background:linear-gradient(135deg,#fff8ed 0%,#fffaf4 50%,#fff0dc 100%);
+}
+
+body.time-evening{
+ background:linear-gradient(135deg,#fff1f3 0%,#fff8f8 50%,#fbecef 100%);
+}
+
+body.time-night{
+ background:linear-gradient(135deg,#f4eef9 0%,#f8f4fb 50%,#eee8f5 100%);
+}
+
+body.time-late{
+ background:linear-gradient(135deg,#f0f1f2 0%,#f7f7f7 50%,#e9eaec 100%);
+}
+
+/* 文字 + 图片左右布局 */
+.media-layout{
+ display:grid;
+ grid-template-columns:minmax(0,1fr) minmax(0,2fr);
+ gap:16px;
+ align-items:center;
+ margin-top:2px;
+}
+
+.media-layout .memory-text{
+ min-width:0;
+ word-break:break-word;
+}
+
+.media-layout .photo{
+ width:100%;
+ height:220px;
+ max-height:320px;
+ object-fit:cover;
+ margin:0;
+ cursor:zoom-in;
+ border-radius:18px;
+ display:block;
+}
+
+.photo{
+ width:100%;
+ border-radius:18px;
+ display:block;
+ margin:0 0 15px;
+ max-height:420px;
+ object-fit:cover;
+}
+
+.photo-only{
+ cursor:zoom-in;
+}
+
+/* 图片放大层 */
+.image-lightbox{
+ display:none;
+ position:fixed;
+ inset:0;
+ z-index:20;
+ background:rgba(0,0,0,.86);
+ align-items:center;
+ justify-content:center;
+ padding:22px;
+ opacity:0;
+ transition:opacity .18s ease;
+}
+
+.image-lightbox.show{
+ display:flex;
+ opacity:1;
+}
+
+.image-lightbox img{
+ max-width:100%;
+ max-height:100%;
+ object-fit:contain;
+ border-radius:12px;
+}
+
+@media(max-width:430px){
+ .media-layout{
+  grid-template-columns:minmax(0,1fr) minmax(0,2fr);
+  gap:12px;
+ }
+
+ .media-layout .photo{
+  height:190px;
+ }
+
+ .media-layout .memory-text{
+  font-size:14px;
+  line-height:1.6;
+ }
 }
 </style>
 </head>
@@ -405,10 +540,7 @@ body.time-late{
   <div class="sub">a little message from yourself</div>
  </div>
 
- <button class="more"
-         onclick="openSettings()"
-         aria-label="设置"
-         title="设置">
+ <button class="more" onclick="openSettings()" aria-label="设置" title="设置">
   <span></span><span></span><span></span>
  </button>
 </header>
@@ -419,26 +551,16 @@ body.time-late{
 
  <section class="card today">
   <div class="label">TODAY</div>
-
-  <div class="memory-title">
-   今天，想留下一点什么？
-  </div>
+  <div class="memory-title">今天，想留下一点什么？</div>
 
   <textarea
    id="todayText"
-   placeholder="写下一句话，或者留一张照片。">
-  </textarea>
+   placeholder="写下一句话，或者留一张照片。"
+  ></textarea>
 
   <div class="actions">
-
-   <button class="pill" onclick="saveToday()">
-    留下
-   </button>
-
-   <button class="pill light" onclick="openEditor()">
-    添加照片
-   </button>
-
+   <button class="pill" onclick="saveToday()">留下</button>
+   <button class="pill light" onclick="openEditor()">添加照片</button>
   </div>
  </section>
 
@@ -446,21 +568,12 @@ body.time-late{
 
 </main>
 
-
 <main id="calendar" class="page">
 
  <div class="monthbar">
-
-  <button class="arrow" onclick="changeMonth(-1)">
-   ‹
-  </button>
-
+  <button class="arrow" onclick="changeMonth(-1)">‹</button>
   <div class="month" id="monthTitle"></div>
-
-  <button class="arrow" onclick="changeMonth(1)">
-   ›
-  </button>
-
+  <button class="arrow" onclick="changeMonth(1)">›</button>
  </div>
 
  <div class="week">
@@ -479,43 +592,36 @@ body.time-late{
 
 </div>
 
-
 <nav class="bottom">
 
  <button
   class="nav active"
   id="navChance"
-  onclick="showPage('chance')">
+  onclick="showPage('chance')"
+ >
   偶然
  </button>
 
  <button
   class="nav"
   id="navCalendar"
-  onclick="showPage('calendar')">
+  onclick="showPage('calendar')"
+ >
   日历
  </button>
 
 </nav>
 
 
-<!-- 编辑模块 -->
+<!-- 编辑窗口 -->
+
 <div id="editor" class="overlay">
 
  <div class="sheet">
 
   <div class="sheethead">
-
-   <strong id="editorTitle">
-    留下一件事
-   </strong>
-
-   <button
-    class="close"
-    onclick="closeEditor()">
-    ×
-   </button>
-
+   <strong id="editorTitle">留下一件事</strong>
+   <button class="close" onclick="closeEditor()">×</button>
   </div>
 
   <div class="field">
@@ -525,14 +631,15 @@ body.time-late{
   <div class="field">
    <textarea
     id="editText"
-    placeholder="写点什么……">
-   </textarea>
+    placeholder="写点什么……"
+   ></textarea>
   </div>
 
   <img
    id="preview"
    class="preview"
-   style="display:none">
+   style="display:none"
+  >
 
   <div class="actions">
 
@@ -540,27 +647,25 @@ body.time-late{
     class="iconbtn"
     onclick="document.getElementById('photoInput').click()"
     aria-label="添加照片"
-    title="添加照片">
-
+    title="添加照片"
+   >
     <svg viewBox="0 0 18 18">
      <rect x="3" y="3" width="12" height="12" rx="2"/>
      <circle cx="6.5" cy="6.5" r="1.2"/>
      <path d="m4.5 13 3.2-3.2 2.3-1.5 2 2.5"/>
     </svg>
-
    </button>
 
    <button
     class="iconbtn dark"
     onclick="saveEditor()"
     aria-label="保存"
-    title="保存">
-
+    title="保存"
+   >
     <svg viewBox="0 0 18 18">
      <path d="M4 3.5h8l2 2V15H4z"/>
      <path d="M6.5 3.5v4h5v-4M6.5 15v-4h5v4"/>
     </svg>
-
    </button>
 
   </div>
@@ -571,28 +676,23 @@ body.time-late{
    accept="image/*"
    capture="environment"
    style="display:none"
-   onchange="loadPhoto(event)">
+   onchange="loadPhoto(event)"
+  >
 
  </div>
 
 </div>
 
 
-<!-- 查看模块 -->
+<!-- 查看窗口 -->
+
 <div id="viewer" class="overlay">
 
  <div class="sheet">
 
   <div class="sheethead">
-
    <strong id="viewDate"></strong>
-
-   <button
-    class="close"
-    onclick="closeViewer()">
-    ×
-   </button>
-
+   <button class="close" onclick="closeViewer()">×</button>
   </div>
 
   <div id="viewContent"></div>
@@ -603,24 +703,22 @@ body.time-late{
     class="iconbtn"
     onclick="editCurrent()"
     aria-label="编辑"
-    title="编辑">
-
+    title="编辑"
+   >
     <svg viewBox="0 0 18 18">
      <path d="M3.5 13.8V16h2.2L14.8 6.9l-2.2-2.2-9.1 9.1ZM11.5 6.2l2.2 2.2"/>
     </svg>
-
    </button>
 
    <button
     class="iconbtn"
     onclick="deleteCurrent()"
     aria-label="删除"
-    title="删除">
-
+    title="删除"
+   >
     <svg viewBox="0 0 18 18">
      <path d="M4 5h10M7 5V3.5h4V5M5 5l.7 10h6.6L13 5M7.5 8v4.5M10.5 8v4.5"/>
     </svg>
-
    </button>
 
   </div>
@@ -630,97 +728,81 @@ body.time-late{
 </div>
 
 
-<!-- 设置 -->
+<!-- 设置窗口 -->
+
 <div id="settings" class="overlay">
 
  <div class="sheet">
 
   <div class="sheethead">
-
    <strong>设置</strong>
-
-   <button
-    class="close"
-    onclick="closeSettings()">
-    ×
-   </button>
-
+   <button class="close" onclick="closeSettings()">×</button>
   </div>
-
 
   <div
    class="setting-row"
-   onclick="exportData()">
-
+   onclick="exportData()"
+  >
    <div>
-    <div class="setting-name">
-     导出日志
-    </div>
-
-    <div class="setting-desc">
-     把所有记录保存为备份文件
-    </div>
+    <div class="setting-name">导出日志</div>
+    <div class="setting-desc">保存 Futurism 日志备份</div>
    </div>
 
-   <svg viewBox="0 0 24 24">
-    <path d="M12 3v11M7.5 9.5 12 14l4.5-4.5M5 17v3h14v-3"/>
+   <svg viewBox="0 0 18 18">
+    <path d="M9 12V3M6 6l3-3 3 3M4 10v4h10v-4"/>
    </svg>
-
   </div>
-
 
   <div
    class="setting-row"
-   onclick="document.getElementById('importInput').click()">
-
+   onclick="document.getElementById('importInput').click()"
+  >
    <div>
-    <div class="setting-name">
-     导入日志
-    </div>
-
-    <div class="setting-desc">
-     从备份文件恢复记录
-    </div>
+    <div class="setting-name">导入日志</div>
+    <div class="setting-desc">从 JSON 文件恢复日志</div>
    </div>
 
-   <svg viewBox="0 0 24 24">
-    <path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 17v3h14v-3"/>
+   <svg viewBox="0 0 18 18">
+    <path d="M9 6v9M6 12l3 3 3-3M4 4h10v4"/>
    </svg>
-
   </div>
 
-
-  <div
-   class="setting-row"
-   onclick="installApp()">
-
-   <div>
-    <div class="setting-name">
-     添加到桌面
-    </div>
-
-    <div class="setting-desc">
-     像独立 App 一样使用 Futurism
-    </div>
-   </div>
-
-   <svg viewBox="0 0 24 24">
-    <rect x="5" y="3" width="14" height="18" rx="2"/>
-    <path d="M9 7h6M10 17h4"/>
-   </svg>
-
-  </div>
-
-
+  <!-- 这里明确是文件，不是图片 -->
   <input
    id="importInput"
    type="file"
    accept=".json,application/json"
    style="display:none"
-   onchange="importData(event)">
+   onchange="importData(event)"
+  >
+
+  <div
+   class="setting-row"
+   onclick="installApp()"
+  >
+   <div>
+    <div class="setting-name">添加到桌面</div>
+    <div class="setting-desc">将 Futurism 安装到设备</div>
+   </div>
+
+   <svg viewBox="0 0 18 18">
+    <path d="M9 3v12M3 9h12"/>
+   </svg>
+  </div>
 
  </div>
 
+</div>
+
+
+<!-- 图片放大 -->
+
+<div
+ id="imageLightbox"
+ class="image-lightbox"
+ onclick="closeLightbox(event)"
+>
+ <img id="lightboxImage" src="" alt="">
 </div>
 
 
@@ -728,9 +810,7 @@ body.time-late{
 
 const KEY='futurism-records-v2';
 
-let records=JSON.parse(
- localStorage.getItem(KEY)||'[]'
-);
+let records=JSON.parse(localStorage.getItem(KEY)||'[]');
 
 let currentMonth=new Date();
 currentMonth.setDate(1);
@@ -739,38 +819,41 @@ let editingId=null;
 let viewingId=null;
 let tempPhoto='';
 
+let lastToday='';
+
 
 function persist(){
-
- localStorage.setItem(
-  KEY,
-  JSON.stringify(records)
- );
-
+ localStorage.setItem(KEY,JSON.stringify(records));
 }
 
 
-/* 使用手机本地时间，而不是 UTC */
 function todayISO(){
 
  const d=new Date();
 
- return d.getFullYear()+
- '-' +
- String(d.getMonth()+1).padStart(2,'0')+
- '-' +
- String(d.getDate()).padStart(2,'0');
+ return d.getFullYear()
+  +'-'
+  +String(d.getMonth()+1).padStart(2,'0')
+  +'-'
+  +String(d.getDate()).padStart(2,'0');
 
 }
 
 
 function todayISODate(d){
 
- return d.getFullYear()+
- '-' +
- String(d.getMonth()+1).padStart(2,'0')+
- '-' +
- String(d.getDate()).padStart(2,'0');
+ return d.getFullYear()
+  +'-'
+  +String(d.getMonth()+1).padStart(2,'0')
+  +'-'
+  +String(d.getDate()).padStart(2,'0');
+
+}
+
+
+function fmt(d){
+
+ return d.replaceAll('-','.');
 
 }
 
@@ -802,9 +885,78 @@ function setTimeTheme(){
 }
 
 
-function fmt(d){
+function esc(s){
 
- return d.replaceAll('-','.');
+ return String(s).replace(
+  /[&<>"']/g,
+  c=>({
+   '&':'&amp;',
+   '<':'&lt;',
+   '>':'&gt;',
+   '"':'&quot;',
+   "'":'&#39;'
+  }[c])
+ );
+
+}
+
+
+/* 文字 + 图片统一左右布局 */
+
+function mediaHtml(r){
+
+ const text=r.text
+  ?'<div class="memory-text">'+esc(r.text)+'</div>'
+  :'';
+
+ const photo=r.photo
+  ?'<img class="photo" src="'+r.photo+'" onclick="openLightbox(this.src,event)" alt="">'
+  :'';
+
+ if(r.photo&&r.text){
+
+  return '<div class="media-layout">'
+   +text
+   +photo
+   +'</div>';
+
+ }
+
+ if(r.photo){
+
+  return '<img class="photo photo-only" src="'+r.photo+'" onclick="openLightbox(this.src,event)" alt="">';
+
+ }
+
+ return text;
+
+}
+
+
+/* 图片放大 */
+
+function openLightbox(src,e){
+
+ if(e)e.stopPropagation();
+
+ document.getElementById('lightboxImage').src=src;
+
+ document
+  .getElementById('imageLightbox')
+  .classList.add('show');
+
+}
+
+
+function closeLightbox(e){
+
+ const box=document.getElementById('imageLightbox');
+
+ if(e&&e.target!==box)return;
+
+ box.classList.remove('show');
+
+ document.getElementById('lightboxImage').src='';
 
 }
 
@@ -813,158 +965,107 @@ function fmt(d){
 
 function showPage(id){
 
- document.querySelectorAll('.page')
+ document
+  .querySelectorAll('.page')
   .forEach(x=>x.classList.remove('active'));
 
- const page=document.getElementById(id);
+ document
+  .getElementById(id)
+  .classList.add('active');
 
- if(page){
-  page.classList.add('active');
- }
-
- document.querySelectorAll('.nav')
+ document
+  .querySelectorAll('.nav')
   .forEach(x=>x.classList.remove('active'));
 
- const nav=document.getElementById(
-  id==='chance'
-   ?'navChance'
-   :'navCalendar'
- );
-
- if(nav){
-  nav.classList.add('active');
- }
+ document
+  .getElementById(
+   id==='chance'
+    ?'navChance'
+    :'navCalendar'
+  )
+  .classList.add('active');
 
  if(id==='calendar'){
-
   renderCalendar();
-
  }else{
-
   renderChance();
-
  }
 
 }
 
 
-/* 偶然 + 最近五天 */
+/* 偶然 */
 
 function renderChance(){
 
  const box=document.getElementById('memory');
 
- const today=todayISO();
-
  const past=records.filter(
-  r=>r.date<today
+  r=>r.date<todayISO()
  );
 
  if(!past.length){
 
   box.innerHTML=
-   '<div class="card empty">'+
-   '还没有来自过去的消息。<br>'+
-   '先留下一点，未来再偶然遇见。'+
-   '</div>';
+   '<div class="card empty">'
+   +'还没有来自过去的消息。<br>'
+   +'先留下一点，未来再偶然遇见。'
+   +'</div>';
 
  }else{
 
   const r=
-   past[Math.floor(
-    Math.random()*past.length
-   )];
+   past[Math.floor(Math.random()*past.length)];
 
   box.innerHTML=
-   '<div class="card">'+
-   '<div class="label">FROM</div>'+
-   '<div class="date">'+fmt(r.date)+'</div>'+
-   (
-    r.photo
-     ?'<img class="photo" src="'+r.photo+'">'
-     :''
-   )+
-   (
-    r.text
-     ?'<div class="memory-text">'+
-       esc(r.text)+
-       '</div>'
-     :''
-   )+
-   '<div class="small-actions">'+
-   '<button onclick="openViewer(\''+
-   r.id+
-   '\')">查看</button>'+
-   '</div>'+
-   '</div>';
+   '<div class="card">'
+   +'<div class="label">FROM</div>'
+   +'<div class="date">'+fmt(r.date)+'</div>'
+   +mediaHtml(r)
+   +'<div class="small-actions">'
+   +'<button onclick="openViewer(\''+r.id+'\')">查看</button>'
+   +'</div>'
+   +'</div>';
 
  }
 
 
- /*
-  * RECENT：
-  * 只显示最近五个自然日
-  * 今天算第一天
-  */
+ /* 最近五个自然日 */
 
- const recent=
-  document.getElementById('recent');
+ const recent=document.getElementById('recent');
 
- const now=
-  new Date(today+'T00:00:00');
+ const today=
+  new Date(todayISO()+'T00:00:00');
 
- const cutoff=
-  new Date(now);
+ const cutoff=new Date(today);
 
  cutoff.setDate(
  cutoff.getDate()-4
  );
 
- const minDate=
-  todayISODate(cutoff);
+ const minDate=todayISODate(cutoff);
 
- const rs=
-  [...records]
-   .filter(
-    r=>r.date>=minDate&&r.date<=today
-   )
-   .sort(
-    (a,b)=>b.date.localeCompare(a.date)
-   );
+ const rs=[...records]
+  .filter(
+   r=>r.date>=minDate&&r.date<=todayISO()
+  )
+  .sort(
+   (a,b)=>b.date.localeCompare(a.date)
+  );
 
- recent.innerHTML=
-  rs.length
-   ?
-   '<div class="label" style="margin:25px 4px 10px">'+
-   'RECENT'+
-   '</div>'+
-   rs.map(
+ recent.innerHTML=rs.length
+  ?'<div class="label" style="margin:25px 4px 10px">RECENT</div>'
+   +rs.map(
     r=>
-     '<div class="card">'+
-     '<div class="date">'+
-     fmt(r.date)+
-     '</div>'+
-     (
-      r.photo
-       ?'<img class="photo" src="'+r.photo+'">'
-       :''
-     )+
-     (
-      r.text
-       ?'<div class="memory-text">'+
-         esc(r.text)+
-         '</div>'
-       :''
-     )+
-     '<div class="small-actions">'+
-     '<button onclick="openViewer(\''+
-     r.id+
-     '\')">查看</button>'+
-     '</div>'+
-     '</div>'
+     '<div class="card">'
+     +'<div class="date">'+fmt(r.date)+'</div>'
+     +mediaHtml(r)
+     +'<div class="small-actions">'
+     +'<button onclick="openViewer(\''+r.id+'\')">查看</button>'
+     +'</div>'
+     +'</div>'
    ).join('')
-   :
-   '';
+  :'';
 
 }
 
@@ -973,24 +1074,15 @@ function renderChance(){
 
 function renderCalendar(){
 
- const y=
-  currentMonth.getFullYear();
+ const y=currentMonth.getFullYear();
+ const m=currentMonth.getMonth();
 
- const m=
-  currentMonth.getMonth();
+ document.getElementById('monthTitle').textContent=
+  y+' · '+String(m+1).padStart(2,'0');
 
- document.getElementById(
-  'monthTitle'
- ).textContent=
-  y+
-  ' · '+
-  String(m+1).padStart(2,'0');
+ const first=new Date(y,m,1);
 
- const first=
-  new Date(y,m,1);
-
- const start=
-  (first.getDay()+6)%7;
+ const start=(first.getDay()+6)%7;
 
  const days=
   new Date(y,m+1,0).getDate();
@@ -1008,11 +1100,9 @@ function renderCalendar(){
    );
 
   html+=
-   '<div class="day other">'+
-   '<div class="daynum">'+
-   d.getDate()+
-   '</div>'+
-   '</div>';
+   '<div class="day other">'
+   +'<div class="daynum">'+d.getDate()+'</div>'
+   +'</div>';
 
  }
 
@@ -1020,11 +1110,10 @@ function renderCalendar(){
  for(let n=1;n<=days;n++){
 
   const iso=
-   y+
-   '-'+
-   String(m+1).padStart(2,'0')+
-   '-'+
-   String(n).padStart(2,'0');
+   y+'-'
+   +String(m+1).padStart(2,'0')
+   +'-'
+   +String(n).padStart(2,'0');
 
   const rs=
    records.filter(
@@ -1032,38 +1121,23 @@ function renderCalendar(){
    );
 
   const r=
-   rs.find(
-    x=>x.photo
-   );
+   rs.find(x=>x.photo);
 
   html+=
-   '<button class="day '+
-   (r?'hasphoto':'')+
-   '" onclick="openDay(\''+
-   iso+
-   '\')">'+
-   (
-    r
-     ?'<img class="thumb" src="'+
-      r.photo+
-      '">'
-     :''
-   )+
-   '<div class="daynum">'+
-   n+
-   '</div>'+
-   (
-    rs.length
-     ?'<i class="mark"></i>'
-     :''
-   )+
-   '</button>';
+   '<button class="day '+(r?'hasphoto':'')+'"'
+   +' onclick="openDay(\''+iso+'\')">'
+   +(r
+    ?'<img class="thumb" src="'+r.photo+'">'
+    :'')
+   +'<div class="daynum">'+n+'</div>'
+   +(rs.length
+    ?'<i class="mark"></i>'
+    :'')
+   +'</button>';
 
  }
 
- document.getElementById(
-  'cal'
- ).innerHTML=html;
+ document.getElementById('cal').innerHTML=html;
 
 }
 
@@ -1079,12 +1153,7 @@ function changeMonth(n){
 }
 
 
-/*
- * 点日历：
- * 有一条记录 -> 查看
- * 多条记录 -> 查看当天全部
- * 没记录 -> 直接进入当天编辑
- */
+/* 打开日期 */
 
 function openDay(date){
 
@@ -1099,35 +1168,22 @@ function openDay(date){
 
  }else if(rs.length>1){
 
-  document.getElementById(
-   'viewDate'
-  ).textContent=fmt(date);
+  document.getElementById('viewDate')
+   .textContent=fmt(date);
 
-  document.getElementById(
-   'viewContent'
-  ).innerHTML=
-   rs.map(
-    r=>
-     (
-      r.photo
-       ?'<img class="photo" src="'+r.photo+'">'
-       :''
-     )+
-     (
-      r.text
-       ?'<div class="memory-text">'+
-         esc(r.text)+
-         '</div>'
-       :''
-     )+
-     '<hr style="border:0;border-top:1px solid #eee;margin:18px 0">'
-   ).join('');
+  document.getElementById('viewContent')
+   .innerHTML=
+    rs.map(
+     r=>
+      mediaHtml(r)
+      +'<hr style="border:0;border-top:1px solid #eee;margin:18px 0">'
+    ).join('');
 
   viewingId=null;
 
-  document.getElementById(
-   'viewer'
-  ).classList.add('show');
+  document
+   .getElementById('viewer')
+   .classList.add('show');
 
  }else{
 
@@ -1148,83 +1204,65 @@ function openEditor(
  editingId=id;
  tempPhoto='';
 
- document.getElementById(
-  'editorTitle'
- ).textContent=
-  id
-   ?'编辑记录'
-   :'留下一件事';
+ document.getElementById('editorTitle')
+  .textContent=
+   id
+    ?'编辑记录'
+    :'留下一件事';
 
- document.getElementById(
-  'editDate'
- ).value=
-  date;
+ document.getElementById('editDate')
+  .value=date;
 
  const r=
   id
-   ?records.find(
-    x=>x.id===id
-   )
+   ?records.find(x=>x.id===id)
    :null;
 
- document.getElementById(
-  'editText'
- ).value=
-  r?.text||'';
+ document.getElementById('editText')
+  .value=r?.text||'';
 
  if(r?.photo){
 
   tempPhoto=r.photo;
 
-  showPreview(
-   r.photo
-  );
+  showPreview(r.photo);
 
  }else{
 
-  document.getElementById(
-   'preview'
-  ).style.display='none';
+  document.getElementById('preview')
+   .style.display='none';
 
  }
 
- document.getElementById(
-  'editor'
- ).classList.add('show');
+ document
+  .getElementById('editor')
+  .classList.add('show');
 
 }
 
 
 function closeEditor(){
 
- document.getElementById(
-  'editor'
- ).classList.remove('show');
+ document
+  .getElementById('editor')
+  .classList.remove('show');
 
 }
 
 
-/*
- * 图片压缩：
- * 最长边限制 1280px，
- * JPEG 质量 78%，
- * 大幅减少 localStorage 卡顿。
- */
+/* 读取照片并压缩 */
 
 function loadPhoto(e){
 
- const f=
-  e.target.files[0];
+ const f=e.target.files[0];
 
  if(!f)return;
 
- const rd=
-  new FileReader();
+ const rd=new FileReader();
 
  rd.onload=()=>{
 
-  const img=
-   new Image();
+  const img=new Image();
 
   img.onload=()=>{
 
@@ -1233,44 +1271,35 @@ function loadPhoto(e){
    const scale=
     Math.min(
      1,
-     max/
-     Math.max(
+     max/Math.max(
       img.width,
       img.height
      )
     );
 
-   const c=
-    document.createElement(
-     'canvas'
-    );
+   const c=document.createElement('canvas');
 
    c.width=
     Math.max(
      1,
-     Math.round(
-      img.width*scale
-     )
+     Math.round(img.width*scale)
     );
 
    c.height=
     Math.max(
      1,
-     Math.round(
-      img.height*scale
-     )
+     Math.round(img.height*scale)
     );
 
-   const ctx=
-    c.getContext('2d');
-
-   ctx.drawImage(
-    img,
-    0,
-    0,
-    c.width,
-    c.height
-   );
+   c
+    .getContext('2d')
+    .drawImage(
+     img,
+     0,
+     0,
+     c.width,
+     c.height
+    );
 
    tempPhoto=
     c.toDataURL(
@@ -1278,35 +1307,29 @@ function loadPhoto(e){
      .78
     );
 
-   showPreview(
-    tempPhoto
-   );
+   showPreview(tempPhoto);
 
   };
 
-  img.src=
-   rd.result;
+  img.src=rd.result;
 
  };
 
  rd.readAsDataURL(f);
 
+ e.target.value='';
+
 }
 
-
-/* 显示照片预览 */
 
 function showPreview(src){
 
  const p=
-  document.getElementById(
-   'preview'
-  );
+  document.getElementById('preview');
 
  p.src=src;
 
- p.style.display=
-  'block';
+ p.style.display='block';
 
 }
 
@@ -1316,23 +1339,22 @@ function showPreview(src){
 function saveEditor(){
 
  const text=
-  document.getElementById(
-   'editText'
-  ).value.trim();
+  document
+   .getElementById('editText')
+   .value
+   .trim();
 
  const date=
-  document.getElementById(
-   'editDate'
-  ).value;
+  document
+   .getElementById('editDate')
+   .value;
 
  if(
   !date||
   (!text&&!tempPhoto)
  ){
 
-  alert(
-   '至少留下文字或照片'
-  );
+  alert('至少留下文字或照片');
 
   return;
 
@@ -1346,19 +1368,26 @@ function saveEditor(){
     x=>x.id===editingId
    );
 
-  if(!r)return;
+  if(r){
 
-  r.date=date;
-  r.text=text;
-  r.photo=tempPhoto;
+   r.date=date;
+   r.text=text;
+   r.photo=tempPhoto;
+
+  }
 
  }else{
 
   records.push({
+
    id:crypto.randomUUID(),
+
    date,
+
    text,
+
    photo:tempPhoto
+
   });
 
  }
@@ -1366,34 +1395,29 @@ function saveEditor(){
 
  persist();
 
- /*
-  * 保存后自动关闭编辑模块
-  * 并立即刷新两个页面
-  */
-
  currentMonth=
-  new Date(
-   date+'T00:00:00'
-  );
+  new Date(date+'T00:00:00');
 
  currentMonth.setDate(1);
 
  closeEditor();
 
  renderChance();
+
  renderCalendar();
 
 }
 
 
-/* 首页 TODAY 直接留下 */
+/* 首页直接留下文字 */
 
 function saveToday(){
 
  const text=
-  document.getElementById(
-   'todayText'
-  ).value.trim();
+  document
+   .getElementById('todayText')
+   .value
+   .trim();
 
  if(!text){
 
@@ -1403,28 +1427,28 @@ function saveToday(){
 
  }
 
- const today=
-  todayISO();
-
  records.push({
+
   id:crypto.randomUUID(),
-  date:today,
+
+  date:todayISO(),
+
   text,
+
   photo:''
+
  });
 
  persist();
 
- document.getElementById(
-  'todayText'
- ).value='';
+ document.getElementById('todayText')
+  .value='';
 
- currentMonth=
-  new Date();
-
+ currentMonth=new Date();
  currentMonth.setDate(1);
 
  renderChance();
+
  renderCalendar();
 
 }
@@ -1443,41 +1467,25 @@ function openViewer(id){
 
  if(!r)return;
 
- document.getElementById(
-  'viewDate'
- ).textContent=
-  fmt(r.date);
+ document.getElementById('viewDate')
+  .textContent=fmt(r.date);
 
- document.getElementById(
-  'viewContent'
- ).innerHTML=
-  (
-   r.photo
-    ?'<img class="photo" src="'+
-     r.photo+
-     '">'
-    :''
-  )+
-  (
-   r.text
-    ?'<div class="memory-text">'+
-      esc(r.text)+
-      '</div>'
-    :''
-  );
+ document.getElementById('viewContent')
+  .innerHTML=
+   mediaHtml(r);
 
- document.getElementById(
-  'viewer'
- ).classList.add('show');
+ document
+  .getElementById('viewer')
+  .classList.add('show');
 
 }
 
 
 function closeViewer(){
 
- document.getElementById(
-  'viewer'
- ).classList.remove('show');
+ document
+  .getElementById('viewer')
+  .classList.remove('show');
 
 }
 
@@ -1495,12 +1503,6 @@ function editCurrent(){
 
  if(!r)return;
 
- /*
-  * 修复原来的问题：
-  * 原来这里传的是空日期，
-  * 现在传入真实记录日期。
-  */
-
  closeViewer();
 
  openEditor(
@@ -1511,7 +1513,7 @@ function editCurrent(){
 }
 
 
-/* 删除：直接删除，不再确认 */
+/* 删除：不再询问 */
 
 function deleteCurrent(){
 
@@ -1527,119 +1529,28 @@ function deleteCurrent(){
  closeViewer();
 
  renderChance();
+
  renderCalendar();
 
 }
-
-
-/* HTML 转义 */
-
-function esc(s){
-
- return String(s??'')
-  .replace(
-   /[&<>"']/g,
-   c=>({
-    '&':'&amp;',
-    '<':'&lt;',
-    '>':'&gt;',
-    '"':'&quot;',
-    "'":'&#39;'
-   }[c])
-  );
-
-}
-
-
-/*
- * 初始化
- */
-
-renderChance();
-
-renderCalendar();
-
-setTimeTheme();
-
-
-/*
- * 每分钟检查时间氛围。
- * 每 30 秒检查一次日期，
- * 跨午夜后自动切换到现实中的新日期。
- */
-
-let lastToday=
- todayISO();
-
-setInterval(()=>{
-
- setTimeTheme();
-
- const now=
-  todayISO();
-
- if(now!==lastToday){
-
-  lastToday=now;
-
-  currentMonth=
-   new Date();
-
-  currentMonth.setDate(1);
-
-  renderChance();
-  renderCalendar();
-
- }
-
-},30000);
-
-
-/* Service Worker */
-
-if(
- "serviceWorker" in navigator
-){
-
- navigator.serviceWorker.register(
-  "./sw.js"
- );
-
-}
-
-
-/* 安装 */
-
-let deferredInstallPrompt=null;
-
-window.addEventListener(
- 'beforeinstallprompt',
- e=>{
-
-  e.preventDefault();
-
-  deferredInstallPrompt=e;
-
- }
-);
 
 
 /* 设置 */
 
 function openSettings(){
 
- document.getElementById(
-  'settings'
- ).classList.add('show');
+ document
+  .getElementById('settings')
+  .classList.add('show');
 
 }
 
 
 function closeSettings(){
 
- document.getElementById(
-  'settings'
- ).classList.remove('show');
+ document
+  .getElementById('settings')
+  .classList.remove('show');
 
 }
 
@@ -1651,72 +1562,82 @@ function exportData(){
  const payload={
   app:'Futurism',
   version:2,
-  exportedAt:
-   new Date().toISOString(),
+  exportedAt:new Date().toISOString(),
   records
  };
 
+ const json=
+  JSON.stringify(
+   payload,
+   null,
+   2
+  );
+
+ const filename=
+  'Futurism-日志备份-'
+  +todayISO()
+  +'.json';
+
+
+ /* APK 原生文件保存 */
+
+ if(
+  window.Android&&
+  typeof window.Android.saveFile==='function'
+ ){
+
+  window.Android.saveFile(
+   filename,
+   json
+  );
+
+  return;
+
+ }
+
+
+ /* 浏览器备用方案 */
+
  const blob=
   new Blob(
-   [
-    JSON.stringify(
-     payload,
-     null,
-     2
-    )
-   ],
-   {
-    type:'application/json'
-   }
+   [json],
+   {type:'application/json'}
   );
 
  const a=
-  document.createElement(
-   'a'
-  );
+  document.createElement('a');
 
  a.href=
   URL.createObjectURL(blob);
 
- a.download=
-  'Futurism-日志备份-'+
-  todayISO()+
-  '.json';
+ a.download=filename;
 
  a.click();
 
  setTimeout(
-  ()=>{
-   URL.revokeObjectURL(
-    a.href
-   );
-  },
+  ()=>URL.revokeObjectURL(a.href),
   1000
  );
 
 }
 
 
-/* 导入 */
+/* 导入 JSON 文件 */
 
 function importData(e){
 
- const f=
-  e.target.files[0];
+ const f=e.target.files[0];
 
  if(!f)return;
 
- const rd=
-  new FileReader();
+ const rd=new FileReader();
 
  rd.onload=()=>{
 
   try{
 
    const data=
-    JSON.parse(
-     rd.result
-    );
+    JSON.parse(rd.result);
 
    const incoming=
     Array.isArray(data)
@@ -1725,6 +1646,7 @@ function importData(e){
 
    if(!Array.isArray(incoming))
     throw new Error();
+
 
    const clean=
     incoming
@@ -1740,11 +1662,19 @@ function importData(e){
       })
      );
 
+
    if(
     !confirm(
      '导入将与现有记录合并，重复记录会覆盖。继续吗？'
     )
-   )return;
+   ){
+
+    e.target.value='';
+
+    return;
+
+   }
+
 
    const map=
     new Map(
@@ -1753,38 +1683,38 @@ function importData(e){
      )
     );
 
+
    clean.forEach(
-    r=>map.set(
-     r.id,
-     r
-    )
+    r=>map.set(r.id,r)
    );
+
 
    records=
     [...map.values()];
 
+
    persist();
 
    renderChance();
+
    renderCalendar();
 
    closeSettings();
 
-   alert(
-    '导入完成'
-   );
+   alert('导入完成');
+
 
   }catch(err){
 
-   alert(
-    '备份文件无法读取'
-   );
+   alert('备份文件无法读取');
 
   }
+
 
   e.target.value='';
 
  };
+
 
  rd.readAsText(f);
 
@@ -1792,6 +1722,20 @@ function importData(e){
 
 
 /* 添加到桌面 */
+
+let deferredInstallPrompt=null;
+
+window.addEventListener(
+ 'beforeinstallprompt',
+ e=>{
+
+  e.preventDefault();
+
+  deferredInstallPrompt=e;
+
+ }
+);
+
 
 async function installApp(){
 
@@ -1810,6 +1754,74 @@ async function installApp(){
   );
 
  }
+
+}
+
+
+/* 初始化 */
+
+renderChance();
+
+renderCalendar();
+
+setTimeTheme();
+
+lastToday=todayISO();
+
+
+/* 自动跨午夜更新 */
+
+setInterval(()=>{
+
+ setTimeTheme();
+
+ const now=todayISO();
+
+ if(now!==lastToday){
+
+  const oldDate=
+   new Date(
+    lastToday+'T00:00:00'
+   );
+
+  const wasCurrentMonth=
+   currentMonth.getFullYear()
+    ===oldDate.getFullYear()
+   &&
+   currentMonth.getMonth()
+    ===oldDate.getMonth();
+
+
+  lastToday=now;
+
+
+  if(wasCurrentMonth){
+
+   currentMonth=new Date();
+
+   currentMonth.setDate(1);
+
+  }
+
+
+  renderChance();
+
+  renderCalendar();
+
+ }
+
+},30000);
+
+
+/* PWA */
+
+if(
+ "serviceWorker" in navigator
+){
+
+ navigator.serviceWorker
+  .register("./sw.js")
+  .catch(()=>{});
 
 }
 
