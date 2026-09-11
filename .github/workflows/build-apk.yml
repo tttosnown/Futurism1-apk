@@ -20,27 +20,53 @@ jobs:
           distribution: temurin
           java-version: '17'
 
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.7'
+
       - name: Set up Android SDK
         uses: android-actions/setup-android@v3
 
       - name: Install Android SDK
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager "platform-tools" "platforms;android-35" "build-tools;35.0.0"
+          yes | sdkmanager --licenses >/dev/null || true
+          sdkmanager \
+            "platform-tools" \
+            "platforms;android-35" \
+            "build-tools;35.0.0"
 
       - name: Create Android project
+        shell: bash
         run: |
-          mkdir -p android-app/app/src/main/java/com/futurism/app
-          mkdir -p android-app/app/src/main/res/mipmap-hdpi
-          mkdir -p android-app/app/src/main/res/mipmap-mdpi
-          mkdir -p android-app/app/src/main/res/mipmap-xhdpi
-          mkdir -p android-app/app/src/main/res/mipmap-xxhdpi
-          mkdir -p android-app/app/src/main/res/mipmap-xxxhdpi
-          mkdir -p android-app/app/src/main/res/xml
-          mkdir -p android-app/app/src/main/res/values
-          mkdir -p android-app/app/src/main/assets/icons
+          set -e
 
-          cat > android-app/settings.gradle <<'EOF'
+          rm -rf android-build
+          mkdir -p android-build/app/src/main/java/com/futurism/app
+          mkdir -p android-build/app/src/main/assets
+          mkdir -p android-build/app/src/main/res/drawable
+          mkdir -p android-build/app/src/main/res/mipmap-hdpi
+          mkdir -p android-build/app/src/main/res/mipmap-mdpi
+          mkdir -p android-build/app/src/main/res/mipmap-xhdpi
+          mkdir -p android-build/app/src/main/res/mipmap-xxhdpi
+          mkdir -p android-build/app/src/main/res/mipmap-xxxhdpi
+          mkdir -p android-build/app/src/main/res/xml
+
+          cp index.html android-build/app/src/main/assets/index.html
+
+          if [ -f manifest.json ]; then
+            cp manifest.json android-build/app/src/main/assets/manifest.json
+          fi
+
+          if [ -f sw.js ]; then
+            cp sw.js android-build/app/src/main/assets/sw.js
+          fi
+
+          if [ -d icons ]; then
+            cp -r icons android-build/app/src/main/assets/
+          fi
+
+          cat > android-build/settings.gradle <<'EOF'
           pluginManagement {
               repositories {
                   google()
@@ -57,22 +83,22 @@ jobs:
               }
           }
 
-          rootProject.name = "FuturismAndroid"
+          rootProject.name = "Futurism"
           include(":app")
           EOF
 
-          cat > android-app/build.gradle <<'EOF'
+          cat > android-build/build.gradle <<'EOF'
           plugins {
               id 'com.android.application' version '8.5.2' apply false
           }
           EOF
 
-          cat > android-app/gradle.properties <<'EOF'
+          cat > android-build/gradle.properties <<'EOF'
           org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
           android.useAndroidX=true
           EOF
 
-          cat > android-app/app/build.gradle <<'EOF'
+          cat > android-build/app/build.gradle <<'EOF'
           plugins {
               id 'com.android.application'
           }
@@ -86,31 +112,45 @@ jobs:
                   minSdk 23
                   targetSdk 35
                   versionCode 1
-                  versionName '1.0'
+                  versionName '1.3'
               }
-          }
-
-          dependencies {
-              implementation 'androidx.core:core:1.15.0'
           }
           EOF
 
-          cat > android-app/app/src/main/AndroidManifest.xml <<'EOF'
+          cat > android-build/app/src/main/res/values.xml <<'EOF'
+          EOF
+
+          mkdir -p android-build/app/src/main/res/values
+
+          cat > android-build/app/src/main/res/values/strings.xml <<'EOF'
+          <resources>
+              <string name="app_name">Futurism</string>
+          </resources>
+          EOF
+
+          cat > android-build/app/src/main/res/xml/file_paths.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <paths xmlns:android="http://schemas.android.com/apk/res/android">
+              <cache-path
+                  name="camera_cache"
+                  path="." />
+          </paths>
+          EOF
+
+          cat > android-build/app/src/main/AndroidManifest.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
               <uses-permission android:name="android.permission.CAMERA" />
 
               <application
-                  android:allowBackup="true"
-                  android:label="Futurism"
+                  android:allowBackup="false"
+                  android:label="@string/app_name"
                   android:theme="@style/AppTheme"
-                  android:usesCleartextTraffic="true"
-                  android:icon="@mipmap/ic_launcher">
+                  android:usesCleartextTraffic="false">
 
                   <activity
                       android:name=".MainActivity"
-                      android:screenOrientation="portrait"
                       android:exported="true">
 
                       <intent-filter>
@@ -125,11 +165,9 @@ jobs:
                       android:authorities="${applicationId}.fileprovider"
                       android:exported="false"
                       android:grantUriPermissions="true">
-
                       <meta-data
                           android:name="android.support.FILE_PROVIDER_PATHS"
                           android:resource="@xml/file_paths" />
-
                   </provider>
 
               </application>
@@ -137,40 +175,37 @@ jobs:
           </manifest>
           EOF
 
-          cat > android-app/app/src/main/res/values/styles.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
+          mkdir -p android-build/app/src/main/res/values
+
+          cat > android-build/app/src/main/res/values/styles.xml <<'EOF'
           <resources>
+
               <style name="AppTheme" parent="android:style/Theme.Material.Light.NoActionBar">
                   <item name="android:fontFamily">sans</item>
                   <item name="android:windowLightStatusBar">true</item>
                   <item name="android:statusBarColor">#F7F3EE</item>
                   <item name="android:navigationBarColor">#F7F3EE</item>
-                  <item name="android:windowActionModeOverlay">true</item>
+                  <item name="android:windowLightNavigationBar">true</item>
+                  <item name="android:colorAccent">#777777</item>
               </style>
+
           </resources>
           EOF
 
-          cat > android-app/app/src/main/res/xml/file_paths.xml <<'EOF'
-          <?xml version="1.0" encoding="utf-8"?>
-          <paths xmlns:android="http://schemas.android.com/apk/res/android">
-              <cache-path
-                  name="camera"
-                  path="camera/" />
-          </paths>
-          EOF
-
-          cat > android-app/app/src/main/java/com/futurism/app/MainActivity.java <<'EOF'
+      - name: Create MainActivity
+        shell: bash
+        run: |
+          cat > android-build/app/src/main/java/com/futurism/app/MainActivity.java <<'EOF'
           package com.futurism.app;
 
           import android.Manifest;
           import android.app.Activity;
-          import android.content.ActivityNotFoundException;
           import android.content.Intent;
           import android.content.pm.PackageManager;
           import android.graphics.Color;
           import android.net.Uri;
           import android.os.Bundle;
-          import android.provider.MediaStore;
+          import android.provider.Settings;
           import android.view.View;
           import android.view.Window;
           import android.webkit.JavascriptInterface;
@@ -179,12 +214,16 @@ jobs:
           import android.webkit.WebSettings;
           import android.webkit.WebView;
           import android.webkit.WebViewClient;
+          import android.webkit.WebResourceRequest;
 
+          import androidx.core.app.ActivityCompat;
+          import androidx.core.content.ContextCompat;
           import androidx.core.content.FileProvider;
 
           import java.io.File;
           import java.io.FileOutputStream;
-          import java.io.IOException;
+          import java.io.OutputStream;
+          import java.nio.charset.StandardCharsets;
 
           public class MainActivity extends Activity {
 
@@ -194,8 +233,6 @@ jobs:
 
               private WebView webView;
               private ValueCallback<Uri[]> filePathCallback;
-              private Uri cameraUri;
-
               private String pendingFileContent = null;
 
               @Override
@@ -209,8 +246,8 @@ jobs:
 
                   if (android.os.Build.VERSION.SDK_INT >= 23) {
                       window.getDecorView().setSystemUiVisibility(
-                              View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
-                              View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
+                          View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR |
+                          View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
                       );
                   }
 
@@ -228,272 +265,176 @@ jobs:
                   settings.setJavaScriptEnabled(true);
                   settings.setDomStorageEnabled(true);
                   settings.setDatabaseEnabled(true);
-
                   settings.setAllowFileAccess(true);
                   settings.setAllowContentAccess(true);
-
                   settings.setBuiltInZoomControls(false);
                   settings.setDisplayZoomControls(false);
                   settings.setSupportZoom(false);
-
                   settings.setLoadWithOverviewMode(false);
                   settings.setUseWideViewPort(false);
+
+                  webView.setWebViewClient(new WebViewClient() {
+                      @Override
+                      public boolean shouldOverrideUrlLoading(
+                              WebView view,
+                              WebResourceRequest request) {
+                          return false;
+                      }
+                  });
+
+                  webView.setWebChromeClient(new WebChromeClient() {
+
+                      @Override
+                      public boolean onShowFileChooser(
+                              WebView webView,
+                              ValueCallback<Uri[]> filePathCallback,
+                              FileChooserParams fileChooserParams) {
+
+                          if (MainActivity.this.filePathCallback != null) {
+                              MainActivity.this.filePathCallback.onReceiveValue(null);
+                          }
+
+                          MainActivity.this.filePathCallback = filePathCallback;
+
+                          String[] acceptTypes =
+                                  fileChooserParams.getAcceptTypes();
+
+                          boolean wantsJson = false;
+
+                          if (acceptTypes != null) {
+                              for (String type : acceptTypes) {
+                                  if (type == null) continue;
+
+                                  String t = type.toLowerCase();
+
+                                  if (t.contains("json")
+                                          || t.contains(".json")
+                                          || t.equals("application/json")) {
+                                      wantsJson = true;
+                                      break;
+                                  }
+                              }
+                          }
+
+                          /*
+                           * JSON 导入：
+                           * 直接打开 Android 系统文件选择器。
+                           * 不再使用 image/*。
+                           */
+                          if (wantsJson) {
+
+                              Intent intent = new Intent(
+                                      Intent.ACTION_OPEN_DOCUMENT
+                              );
+
+                              intent.addCategory(
+                                      Intent.CATEGORY_OPENABLE
+                              );
+
+                              intent.setType("application/json");
+
+                              intent.putExtra(
+                                      Intent.EXTRA_ALLOW_MULTIPLE,
+                                      false
+                              );
+
+                              try {
+                                  startActivityForResult(
+                                          intent,
+                                          FILE_CHOOSER_REQUEST
+                                  );
+                              } catch (Exception e) {
+
+                                  intent.setType("*/*");
+
+                                  startActivityForResult(
+                                          intent,
+                                          FILE_CHOOSER_REQUEST
+                                  );
+                              }
+
+                              return true;
+                          }
+
+                          /*
+                           * 图片：
+                           * 保留原来的相机 + 相册功能。
+                           */
+                          Intent galleryIntent = new Intent(
+                                  Intent.ACTION_GET_CONTENT
+                          );
+
+                          galleryIntent.addCategory(
+                                  Intent.CATEGORY_OPENABLE
+                          );
+
+                          galleryIntent.setType("image/*");
+
+                          Intent cameraIntent = null;
+
+                          if (ContextCompat.checkSelfPermission(
+                                  MainActivity.this,
+                                  Manifest.permission.CAMERA
+                          ) == PackageManager.PERMISSION_GRANTED) {
+
+                              cameraIntent = new Intent(
+                                      android.provider.MediaStore.ACTION_IMAGE_CAPTURE
+                              );
+                          }
+
+                          Intent chooserIntent;
+
+                          if (cameraIntent != null) {
+                              chooserIntent = new Intent(
+                                      Intent.ACTION_CHOOSER
+                              );
+
+                              chooserIntent.putExtra(
+                                      Intent.EXTRA_INTENT,
+                                      galleryIntent
+                              );
+
+                              chooserIntent.putExtra(
+                                      Intent.EXTRA_INITIAL_INTENTS,
+                                      new Intent[]{cameraIntent}
+                              );
+                          } else {
+                              chooserIntent = galleryIntent;
+                          }
+
+                          try {
+                              startActivityForResult(
+                                      chooserIntent,
+                                      FILE_CHOOSER_REQUEST
+                              );
+                          } catch (Exception e) {
+                              MainActivity.this.filePathCallback = null;
+                              return false;
+                          }
+
+                          return true;
+                      }
+                  });
 
                   webView.addJavascriptInterface(
                           new AndroidBridge(),
                           "Android"
                   );
 
-                  webView.setWebViewClient(
-                          new WebViewClient()
-                  );
-
-                  webView.setWebChromeClient(
-                          new WebChromeClient() {
-
-                              @Override
-                              public boolean onShowFileChooser(
-                                      WebView webView,
-                                      ValueCallback<Uri[]> callback,
-                                      FileChooserParams fileChooserParams) {
-
-                                  if (MainActivity.this.filePathCallback != null) {
-                                      MainActivity.this.filePathCallback.onReceiveValue(null);
-                                  }
-
-                                  MainActivity.this.filePathCallback = callback;
-
-                                  if (android.os.Build.VERSION.SDK_INT >= 23 &&
-                                          checkSelfPermission(
-                                                  Manifest.permission.CAMERA
-                                          ) != PackageManager.PERMISSION_GRANTED) {
-
-                                      requestPermissions(
-                                              new String[]{
-                                                      Manifest.permission.CAMERA
-                                              },
-                                              CAMERA_PERMISSION_REQUEST
-                                      );
-
-                                      return true;
-                                  }
-
-                                  openFileChooser();
-
-                                  return true;
-                              }
-                          }
-                  );
-
                   webView.loadUrl(
                           "file:///android_asset/index.html"
                   );
-              }
 
-              private void openFileChooser() {
+                  if (ContextCompat.checkSelfPermission(
+                          this,
+                          Manifest.permission.CAMERA
+                  ) != PackageManager.PERMISSION_GRANTED) {
 
-                  Intent cameraIntent =
-                          new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-
-                  try {
-
-                      File cameraDir =
-                              new File(getCacheDir(), "camera");
-
-                      if (!cameraDir.exists()) {
-                          cameraDir.mkdirs();
-                      }
-
-                      File photoFile =
-                              File.createTempFile(
-                                      "futurism_",
-                                      ".jpg",
-                                      cameraDir
-                              );
-
-                      cameraUri =
-                              FileProvider.getUriForFile(
-                                      this,
-                                      getPackageName()
-                                              + ".fileprovider",
-                                      photoFile
-                              );
-
-                      cameraIntent.putExtra(
-                              MediaStore.EXTRA_OUTPUT,
-                              cameraUri
+                      ActivityCompat.requestPermissions(
+                              this,
+                              new String[]{Manifest.permission.CAMERA},
+                              CAMERA_PERMISSION_REQUEST
                       );
-
-                      cameraIntent.addFlags(
-                              Intent.FLAG_GRANT_WRITE_URI_PERMISSION |
-                              Intent.FLAG_GRANT_READ_URI_PERMISSION
-                      );
-
-                  } catch (IOException e) {
-                      cameraIntent = null;
-                  }
-
-                  Intent galleryIntent =
-                          new Intent(Intent.ACTION_OPEN_DOCUMENT);
-
-                  galleryIntent.addCategory(
-                          Intent.CATEGORY_OPENABLE
-                  );
-
-                  galleryIntent.setType("image/*");
-
-                  Intent chooser;
-
-                  if (cameraIntent != null &&
-                          cameraIntent.resolveActivity(
-                                  getPackageManager()
-                          ) != null) {
-
-                      chooser =
-                              Intent.createChooser(
-                                      galleryIntent,
-                                      "选择照片或拍摄照片"
-                              );
-
-                      chooser.putExtra(
-                              Intent.EXTRA_INITIAL_INTENTS,
-                              new Intent[]{cameraIntent}
-                      );
-
-                  } else {
-
-                      chooser =
-                              Intent.createChooser(
-                                      galleryIntent,
-                                      "选择照片"
-                              );
-                  }
-
-                  try {
-
-                      startActivityForResult(
-                              chooser,
-                              FILE_CHOOSER_REQUEST
-                      );
-
-                  } catch (ActivityNotFoundException e) {
-
-                      if (filePathCallback != null) {
-                          filePathCallback.onReceiveValue(null);
-                          filePathCallback = null;
-                      }
-                  }
-              }
-
-              @Override
-              public void onRequestPermissionsResult(
-                      int requestCode,
-                      String[] permissions,
-                      int[] grantResults) {
-
-                  super.onRequestPermissionsResult(
-                          requestCode,
-                          permissions,
-                          grantResults
-                  );
-
-                  if (requestCode ==
-                          CAMERA_PERMISSION_REQUEST) {
-
-                      if (grantResults.length > 0 &&
-                              grantResults[0] ==
-                                      PackageManager.PERMISSION_GRANTED) {
-
-                          openFileChooser();
-
-                      } else {
-
-                          if (filePathCallback != null) {
-                              filePathCallback.onReceiveValue(null);
-                              filePathCallback = null;
-                          }
-                      }
-                  }
-              }
-
-              @Override
-              protected void onActivityResult(
-                      int requestCode,
-                      int resultCode,
-                      Intent data) {
-
-                  super.onActivityResult(
-                          requestCode,
-                          resultCode,
-                          data
-                  );
-
-                  if (requestCode ==
-                          FILE_CHOOSER_REQUEST) {
-
-                      if (filePathCallback == null) {
-                          return;
-                      }
-
-                      Uri[] results = null;
-
-                      if (resultCode == RESULT_OK) {
-
-                          if (data != null &&
-                                  data.getData() != null) {
-
-                              results = new Uri[]{
-                                      data.getData()
-                              };
-
-                          } else if (cameraUri != null) {
-
-                              results = new Uri[]{
-                                      cameraUri
-                              };
-                          }
-                      }
-
-                      filePathCallback.onReceiveValue(
-                              results
-                      );
-
-                      filePathCallback = null;
-                      cameraUri = null;
-                  }
-
-                  if (requestCode ==
-                          CREATE_FILE_REQUEST) {
-
-                      if (resultCode == RESULT_OK &&
-                              data != null &&
-                              data.getData() != null &&
-                              pendingFileContent != null) {
-
-                          try {
-
-                              Uri uri = data.getData();
-
-                              java.io.OutputStream output =
-                                      getContentResolver()
-                                              .openOutputStream(uri);
-
-                              if (output != null) {
-
-                                  output.write(
-                                          pendingFileContent
-                                                  .getBytes("UTF-8")
-                                  );
-
-                                  output.flush();
-                                  output.close();
-                              }
-
-                          } catch (Exception ignored) {
-                          }
-                      }
-
-                      pendingFileContent = null;
                   }
               }
 
@@ -508,18 +449,15 @@ jobs:
 
                           pendingFileContent = content;
 
-                          Intent intent =
-                                  new Intent(
-                                          Intent.ACTION_CREATE_DOCUMENT
-                                  );
+                          Intent intent = new Intent(
+                                  Intent.ACTION_CREATE_DOCUMENT
+                          );
 
                           intent.addCategory(
                                   Intent.CATEGORY_OPENABLE
                           );
 
-                          intent.setType(
-                                  "application/json"
-                          );
+                          intent.setType("application/json");
 
                           intent.putExtra(
                                   Intent.EXTRA_TITLE,
@@ -535,10 +473,81 @@ jobs:
               }
 
               @Override
+              protected void onActivityResult(
+                      int requestCode,
+                      int resultCode,
+                      Intent data) {
+
+                  super.onActivityResult(
+                          requestCode,
+                          resultCode,
+                          data
+                  );
+
+                  if (requestCode == FILE_CHOOSER_REQUEST) {
+
+                      if (filePathCallback == null) {
+                          return;
+                      }
+
+                      Uri[] results = null;
+
+                      if (resultCode == RESULT_OK && data != null) {
+
+                          Uri uri = data.getData();
+
+                          if (uri != null) {
+                              results = new Uri[]{uri};
+                          }
+                      }
+
+                      filePathCallback.onReceiveValue(results);
+                      filePathCallback = null;
+
+                      return;
+                  }
+
+                  if (requestCode == CREATE_FILE_REQUEST) {
+
+                      if (resultCode == RESULT_OK
+                              && data != null
+                              && data.getData() != null
+                              && pendingFileContent != null) {
+
+                          Uri uri = data.getData();
+
+                          try {
+
+                              OutputStream output =
+                                      getContentResolver()
+                                              .openOutputStream(uri);
+
+                              if (output != null) {
+
+                                  output.write(
+                                          pendingFileContent.getBytes(
+                                                  StandardCharsets.UTF_8
+                                          )
+                                  );
+
+                                  output.flush();
+                                  output.close();
+                              }
+
+                          } catch (Exception e) {
+                              e.printStackTrace();
+                          }
+                      }
+
+                      pendingFileContent = null;
+                  }
+              }
+
+              @Override
               public void onBackPressed() {
 
-                  if (webView != null &&
-                          webView.canGoBack()) {
+                  if (webView != null
+                          && webView.canGoBack()) {
 
                       webView.goBack();
 
@@ -560,52 +569,40 @@ jobs:
           }
           EOF
 
-      - name: Copy Futurism web files
+      - name: Add AndroidX dependency
+        shell: bash
         run: |
-          cp index.html android-app/app/src/main/assets/index.html
+          python3 - <<'PY'
+          from pathlib import Path
 
-          if [ -f manifest.json ]; then
-            cp manifest.json android-app/app/src/main/assets/manifest.json
-          fi
+          p = Path("android-build/app/build.gradle")
+          s = p.read_text()
 
-          if [ -f sw.js ]; then
-            cp sw.js android-app/app/src/main/assets/sw.js
-          fi
+          s += r'''
 
-          if [ -d icons ]; then
-            cp -r icons/* android-app/app/src/main/assets/icons/ || true
-          fi
+          dependencies {
+              implementation 'androidx.core:core:1.15.0'
+          }
+          '''
 
-      - name: Prepare launcher icon
-        run: |
-          ICON=""
-
-          if [ -f "icon-192.png" ]; then
-            ICON="icon-192.png"
-          elif [ -f "icons/icon-192.png" ]; then
-            ICON="icons/icon-192.png"
-          fi
-
-          if [ -n "$ICON" ]; then
-            cp "$ICON" android-app/app/src/main/res/mipmap-mdpi/ic_launcher.png
-            cp "$ICON" android-app/app/src/main/res/mipmap-hdpi/ic_launcher.png
-            cp "$ICON" android-app/app/src/main/res/mipmap-xhdpi/ic_launcher.png
-            cp "$ICON" android-app/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
-            cp "$ICON" android-app/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-          fi
-
-      - name: Create Gradle wrapper
-        working-directory: android-app
-        run: |
-          gradle wrapper --gradle-version 8.7
+          p.write_text(s)
+          PY
 
       - name: Build APK
-        working-directory: android-app
+        working-directory: android-build
         run: |
-          ./gradlew assembleDebug --no-daemon
+          gradle wrapper --gradle-version 8.7
+          ./gradlew assembleDebug --stacktrace
+
+      - name: Rename APK
+        run: |
+          mkdir -p output
+          cp android-build/app/build/outputs/apk/debug/app-debug.apk \
+             output/Futurism-APK-v1.3-json-import-fix.apk
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Futurism-APK-v1.3
-          path: android-app/app/build/outputs/apk/debug/app-debug.apk
+          name: Futurism-APK-v1.3-json-import-fix
+          path: output/Futurism-APK-v1.3-json-import-fix.apk
+          if-no-files-found: error
