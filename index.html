@@ -197,7 +197,7 @@ function openViewer(id){
 }
 function closeViewer(){document.getElementById('viewer').classList.remove('show')}
 function editCurrent(){if(!viewingId)return;closeViewer();openEditor('',viewingId)}
-function deleteCurrent(){if(!viewingId)return;if(confirm('确定删除这条记录吗？')){records=records.filter(r=>r.id!==viewingId);persist();closeViewer();renderChance();renderCalendar()}}
+function deleteCurrent(){if(!viewingId)return;records=records.filter(r=>r.id!==viewingId);persist();closeViewer();renderChance();renderCalendar()}
 function esc(s){return s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 renderChance(); setTimeTheme(); setInterval(setTimeTheme,60000); if("serviceWorker" in navigator) navigator.serviceWorker.register("./sw.js");
 
