@@ -31,13 +31,13 @@ jobs:
       - name: Create Android project
         run: |
           mkdir -p android-app/app/src/main/java/com/futurism/app
-          mkdir -p android-app/app/src/main/res/drawable
           mkdir -p android-app/app/src/main/res/mipmap-hdpi
           mkdir -p android-app/app/src/main/res/mipmap-mdpi
           mkdir -p android-app/app/src/main/res/mipmap-xhdpi
           mkdir -p android-app/app/src/main/res/mipmap-xxhdpi
           mkdir -p android-app/app/src/main/res/mipmap-xxxhdpi
           mkdir -p android-app/app/src/main/res/xml
+          mkdir -p android-app/app/src/main/res/values
           mkdir -p android-app/app/src/main/assets/icons
 
           cat > android-app/settings.gradle <<'EOF'
@@ -89,6 +89,10 @@ jobs:
                   versionName '1.0'
               }
           }
+
+          dependencies {
+              implementation 'androidx.core:core:1.15.0'
+          }
           EOF
 
           cat > android-app/app/src/main/AndroidManifest.xml <<'EOF'
@@ -121,20 +125,17 @@ jobs:
                       android:authorities="${applicationId}.fileprovider"
                       android:exported="false"
                       android:grantUriPermissions="true">
+
                       <meta-data
                           android:name="android.support.FILE_PROVIDER_PATHS"
                           android:resource="@xml/file_paths" />
+
                   </provider>
 
               </application>
 
           </manifest>
           EOF
-
-          cat > android-app/app/src/main/res/values.xml <<'EOF'
-          EOF
-
-          mkdir -p android-app/app/src/main/res/values
 
           cat > android-app/app/src/main/res/values/styles.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
@@ -169,10 +170,10 @@ jobs:
           import android.graphics.Color;
           import android.net.Uri;
           import android.os.Bundle;
-          import android.os.Environment;
           import android.provider.MediaStore;
           import android.view.View;
           import android.view.Window;
+          import android.webkit.JavascriptInterface;
           import android.webkit.ValueCallback;
           import android.webkit.WebChromeClient;
           import android.webkit.WebSettings;
@@ -182,16 +183,20 @@ jobs:
           import androidx.core.content.FileProvider;
 
           import java.io.File;
+          import java.io.FileOutputStream;
           import java.io.IOException;
 
           public class MainActivity extends Activity {
 
               private static final int FILE_CHOOSER_REQUEST = 1001;
               private static final int CAMERA_PERMISSION_REQUEST = 1002;
+              private static final int CREATE_FILE_REQUEST = 1003;
 
               private WebView webView;
               private ValueCallback<Uri[]> filePathCallback;
               private Uri cameraUri;
+
+              private String pendingFileContent = null;
 
               @Override
               protected void onCreate(Bundle savedInstanceState) {
@@ -234,65 +239,85 @@ jobs:
                   settings.setLoadWithOverviewMode(false);
                   settings.setUseWideViewPort(false);
 
-                  webView.setWebViewClient(new WebViewClient());
+                  webView.addJavascriptInterface(
+                          new AndroidBridge(),
+                          "Android"
+                  );
 
-                  webView.setWebChromeClient(new WebChromeClient() {
+                  webView.setWebViewClient(
+                          new WebViewClient()
+                  );
 
-                      @Override
-                      public boolean onShowFileChooser(
-                              WebView webView,
-                              ValueCallback<Uri[]> filePathCallback,
-                              FileChooserParams fileChooserParams) {
+                  webView.setWebChromeClient(
+                          new WebChromeClient() {
 
-                          if (MainActivity.this.filePathCallback != null) {
-                              MainActivity.this.filePathCallback.onReceiveValue(null);
+                              @Override
+                              public boolean onShowFileChooser(
+                                      WebView webView,
+                                      ValueCallback<Uri[]> callback,
+                                      FileChooserParams fileChooserParams) {
+
+                                  if (MainActivity.this.filePathCallback != null) {
+                                      MainActivity.this.filePathCallback.onReceiveValue(null);
+                                  }
+
+                                  MainActivity.this.filePathCallback = callback;
+
+                                  if (android.os.Build.VERSION.SDK_INT >= 23 &&
+                                          checkSelfPermission(
+                                                  Manifest.permission.CAMERA
+                                          ) != PackageManager.PERMISSION_GRANTED) {
+
+                                      requestPermissions(
+                                              new String[]{
+                                                      Manifest.permission.CAMERA
+                                              },
+                                              CAMERA_PERMISSION_REQUEST
+                                      );
+
+                                      return true;
+                                  }
+
+                                  openFileChooser();
+
+                                  return true;
+                              }
                           }
+                  );
 
-                          MainActivity.this.filePathCallback = filePathCallback;
-
-                          if (android.os.Build.VERSION.SDK_INT >= 23 &&
-                                  checkSelfPermission(Manifest.permission.CAMERA)
-                                          != PackageManager.PERMISSION_GRANTED) {
-
-                              requestPermissions(
-                                      new String[]{Manifest.permission.CAMERA},
-                                      CAMERA_PERMISSION_REQUEST
-                              );
-
-                              return true;
-                          }
-
-                          openFileChooser();
-
-                          return true;
-                      }
-                  });
-
-                  webView.loadUrl("file:///android_asset/index.html");
+                  webView.loadUrl(
+                          "file:///android_asset/index.html"
+                  );
               }
 
               private void openFileChooser() {
 
-                  Intent cameraIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+                  Intent cameraIntent =
+                          new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
 
                   try {
-                      File cameraDir = new File(getCacheDir(), "camera");
+
+                      File cameraDir =
+                              new File(getCacheDir(), "camera");
 
                       if (!cameraDir.exists()) {
                           cameraDir.mkdirs();
                       }
 
-                      File photoFile = File.createTempFile(
-                              "futurism_",
-                              ".jpg",
-                              cameraDir
-                      );
+                      File photoFile =
+                              File.createTempFile(
+                                      "futurism_",
+                                      ".jpg",
+                                      cameraDir
+                              );
 
-                      cameraUri = FileProvider.getUriForFile(
-                              this,
-                              getPackageName() + ".fileprovider",
-                              photoFile
-                      );
+                      cameraUri =
+                              FileProvider.getUriForFile(
+                                      this,
+                                      getPackageName()
+                                              + ".fileprovider",
+                                      photoFile
+                              );
 
                       cameraIntent.putExtra(
                               MediaStore.EXTRA_OUTPUT,
@@ -308,19 +333,27 @@ jobs:
                       cameraIntent = null;
                   }
 
-                  Intent galleryIntent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
-                  galleryIntent.addCategory(Intent.CATEGORY_OPENABLE);
+                  Intent galleryIntent =
+                          new Intent(Intent.ACTION_OPEN_DOCUMENT);
+
+                  galleryIntent.addCategory(
+                          Intent.CATEGORY_OPENABLE
+                  );
+
                   galleryIntent.setType("image/*");
 
                   Intent chooser;
 
                   if (cameraIntent != null &&
-                          cameraIntent.resolveActivity(getPackageManager()) != null) {
+                          cameraIntent.resolveActivity(
+                                  getPackageManager()
+                          ) != null) {
 
-                      chooser = Intent.createChooser(
-                              galleryIntent,
-                              "选择照片或拍摄照片"
-                      );
+                      chooser =
+                              Intent.createChooser(
+                                      galleryIntent,
+                                      "选择照片或拍摄照片"
+                              );
 
                       chooser.putExtra(
                               Intent.EXTRA_INITIAL_INTENTS,
@@ -328,18 +361,23 @@ jobs:
                       );
 
                   } else {
-                      chooser = Intent.createChooser(
-                              galleryIntent,
-                              "选择照片"
-                      );
+
+                      chooser =
+                              Intent.createChooser(
+                                      galleryIntent,
+                                      "选择照片"
+                              );
                   }
 
                   try {
+
                       startActivityForResult(
                               chooser,
                               FILE_CHOOSER_REQUEST
                       );
+
                   } catch (ActivityNotFoundException e) {
+
                       if (filePathCallback != null) {
                           filePathCallback.onReceiveValue(null);
                           filePathCallback = null;
@@ -359,10 +397,12 @@ jobs:
                           grantResults
                   );
 
-                  if (requestCode == CAMERA_PERMISSION_REQUEST) {
+                  if (requestCode ==
+                          CAMERA_PERMISSION_REQUEST) {
 
                       if (grantResults.length > 0 &&
-                              grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                              grantResults[0] ==
+                                      PackageManager.PERMISSION_GRANTED) {
 
                           openFileChooser();
 
@@ -388,43 +428,122 @@ jobs:
                           data
                   );
 
-                  if (requestCode != FILE_CHOOSER_REQUEST) {
-                      return;
-                  }
+                  if (requestCode ==
+                          FILE_CHOOSER_REQUEST) {
 
-                  if (filePathCallback == null) {
-                      return;
-                  }
-
-                  Uri[] results = null;
-
-                  if (resultCode == RESULT_OK) {
-
-                      if (data != null && data.getData() != null) {
-
-                          results = new Uri[]{
-                                  data.getData()
-                          };
-
-                      } else if (cameraUri != null) {
-
-                          results = new Uri[]{
-                                  cameraUri
-                          };
+                      if (filePathCallback == null) {
+                          return;
                       }
+
+                      Uri[] results = null;
+
+                      if (resultCode == RESULT_OK) {
+
+                          if (data != null &&
+                                  data.getData() != null) {
+
+                              results = new Uri[]{
+                                      data.getData()
+                              };
+
+                          } else if (cameraUri != null) {
+
+                              results = new Uri[]{
+                                      cameraUri
+                              };
+                          }
+                      }
+
+                      filePathCallback.onReceiveValue(
+                              results
+                      );
+
+                      filePathCallback = null;
+                      cameraUri = null;
                   }
 
-                  filePathCallback.onReceiveValue(results);
-                  filePathCallback = null;
-                  cameraUri = null;
+                  if (requestCode ==
+                          CREATE_FILE_REQUEST) {
+
+                      if (resultCode == RESULT_OK &&
+                              data != null &&
+                              data.getData() != null &&
+                              pendingFileContent != null) {
+
+                          try {
+
+                              Uri uri = data.getData();
+
+                              java.io.OutputStream output =
+                                      getContentResolver()
+                                              .openOutputStream(uri);
+
+                              if (output != null) {
+
+                                  output.write(
+                                          pendingFileContent
+                                                  .getBytes("UTF-8")
+                                  );
+
+                                  output.flush();
+                                  output.close();
+                              }
+
+                          } catch (Exception ignored) {
+                          }
+                      }
+
+                      pendingFileContent = null;
+                  }
+              }
+
+              public class AndroidBridge {
+
+                  @JavascriptInterface
+                  public void saveFile(
+                          String filename,
+                          String content) {
+
+                      runOnUiThread(() -> {
+
+                          pendingFileContent = content;
+
+                          Intent intent =
+                                  new Intent(
+                                          Intent.ACTION_CREATE_DOCUMENT
+                                  );
+
+                          intent.addCategory(
+                                  Intent.CATEGORY_OPENABLE
+                          );
+
+                          intent.setType(
+                                  "application/json"
+                          );
+
+                          intent.putExtra(
+                                  Intent.EXTRA_TITLE,
+                                  filename
+                          );
+
+                          startActivityForResult(
+                                  intent,
+                                  CREATE_FILE_REQUEST
+                          );
+                      });
+                  }
               }
 
               @Override
               public void onBackPressed() {
 
-                  if (webView != null && webView.canGoBack()) {
+                  if (webView != null &&
+                          webView.canGoBack()) {
+
                       webView.goBack();
+
                   } else {
+
                       super.onBackPressed();
                   }
               }
@@ -440,23 +559,6 @@ jobs:
               }
           }
           EOF
-
-      - name: Add AndroidX dependency
-        run: |
-          python3 - <<'PY'
-          from pathlib import Path
-
-          p = Path("android-app/app/build.gradle")
-          text = p.read_text()
-
-          text += """
-          dependencies {
-              implementation 'androidx.core:core:1.15.0'
-          }
-          """
-
-          p.write_text(text)
-          PY
 
       - name: Copy Futurism web files
         run: |
@@ -490,39 +592,6 @@ jobs:
             cp "$ICON" android-app/app/src/main/res/mipmap-xhdpi/ic_launcher.png
             cp "$ICON" android-app/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
             cp "$ICON" android-app/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-          else
-            python3 - <<'PY'
-          from PIL import Image, ImageDraw
-
-          sizes = {
-              "mdpi": 48,
-              "hdpi": 72,
-              "xhdpi": 96,
-              "xxhdpi": 144,
-              "xxxhdpi": 192
-          }
-
-          for density, size in sizes.items():
-              img = Image.new("RGBA", (size, size), "#eeeaf7")
-              draw = ImageDraw.Draw(img)
-
-              margin = size * 0.23
-              draw.rounded_rectangle(
-                  (
-                      margin,
-                      margin,
-                      size - margin,
-                      size - margin
-                  ),
-                  radius=size * 0.12,
-                  outline="#17151a",
-                  width=max(2, int(size * 0.035))
-              )
-
-              img.save(
-                  f"android-app/app/src/main/res/mipmap-{density}/ic_launcher.png"
-              )
-          PY
           fi
 
       - name: Create Gradle wrapper
@@ -538,5 +607,5 @@ jobs:
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: Futurism-APK-v1.2
+          name: Futurism-APK-v1.3
           path: android-app/app/build/outputs/apk/debug/app-debug.apk
