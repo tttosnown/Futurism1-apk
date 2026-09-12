@@ -527,10 +527,14 @@ body.time-late{
   line-height:1.6;
  }
 }
+
+#startupSplash{position:fixed;inset:0;z-index:9999;background:#f3f0f8;display:flex;align-items:center;justify-content:center;transition:opacity .2s ease}#startupSplash.hide{opacity:0;pointer-events:none}.startupSplashTitle{font-size:24px;letter-spacing:.02em;font-weight:500;color:#17151a}
 </style>
 </head>
 
 <body>
+
+<div id="startupSplash" aria-label="Futurism 启动封面"><div class="startupSplashTitle">Futurism</div></div>
 
 <div class="app">
 
@@ -1014,8 +1018,13 @@ function renderChance(){
 
  }else{
 
-  const r=
-   past[Math.floor(Math.random()*past.length)];
+  const fromKey='futurism-from-'+todayISO();
+ let savedId=localStorage.getItem(fromKey);
+ let r=past.find(x=>String(x.id)===String(savedId));
+ if(!r){
+  r=past[Math.floor(Math.random()*past.length)];
+  localStorage.setItem(fromKey,String(r.id));
+ }
 
   box.innerHTML=
    '<div class="card">'
@@ -1172,12 +1181,15 @@ function openDay(date){
    .textContent=fmt(date);
 
   document.getElementById('viewContent')
-   .innerHTML=
-    rs.map(
-     r=>
-      mediaHtml(r)
-      +'<hr style="border:0;border-top:1px solid #eee;margin:18px 0">'
-    ).join('');
+   .innerHTML=rs.map(r=>
+    '<div class="multi-record" style="padding-bottom:16px;margin-bottom:16px;border-bottom:1px solid #eee">'
+    +mediaHtml(r)
+    +'<div class="small-actions" style="margin-top:10px;display:flex;gap:8px">'
+    +'<button onclick="openViewer(\''+r.id+'\')">查看</button>'
+    +'<button onclick="editRecordFromDay(\''+r.id+'\')">编辑</button>'
+    +'<button onclick="deleteRecordFromDay(\''+r.id+'\')">删除</button>'
+    +'</div></div>'
+   ).join('');
 
   viewingId=null;
 
@@ -1491,6 +1503,24 @@ function closeViewer(){
 
 
 /* 编辑当前记录 */
+
+function editRecordFromDay(id){
+ const r=records.find(x=>x.id===id);
+ if(!r)return;
+ closeViewer();
+ openEditor(r.date,id);
+}
+
+function deleteRecordFromDay(id){
+ const r=records.find(x=>x.id===id);
+ if(!r)return;
+ if(!confirm('删除这条记录吗？'))return;
+ records=records.filter(x=>x.id!==id);
+ persist();
+ closeViewer();
+ renderChance();
+ renderCalendar();
+}
 
 function editCurrent(){
 
@@ -1826,6 +1856,8 @@ if(
 }
 
 </script>
+
+<script>setTimeout(()=>document.getElementById('startupSplash')?.classList.add('hide'),900);</script>
 
 </body>
 </html>
