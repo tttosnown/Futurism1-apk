@@ -66,6 +66,14 @@ jobs:
             cp -r icons android-build/app/src/main/assets/
           fi
 
+          if [ -f icon-192.png ]; then
+            cp icon-192.png android-build/app/src/main/res/mipmap-mdpi/ic_launcher.png
+            cp icon-192.png android-build/app/src/main/res/mipmap-hdpi/ic_launcher.png
+            cp icon-192.png android-build/app/src/main/res/mipmap-xhdpi/ic_launcher.png
+            cp icon-192.png android-build/app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+            cp icon-192.png android-build/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          fi
+
           cat > android-build/settings.gradle <<'EOF'
           pluginManagement {
               repositories {
@@ -144,6 +152,8 @@ jobs:
               <uses-permission android:name="android.permission.CAMERA" />
 
               <application
+                  android:icon="@mipmap/ic_launcher"
+                  android:roundIcon="@mipmap/ic_launcher"
                   android:allowBackup="false"
                   android:label="@string/app_name"
                   android:theme="@style/AppTheme"
